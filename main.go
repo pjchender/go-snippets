@@ -2,28 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/pjchender/go-snippets/jwt"
-	"github.com/pjchender/go-snippets/utils"
+	"github.com/pjchender/go-snippets/lib"
 )
 
 func main() {
-	utils.LoadEnv()
-	userID, _ := uuid.NewRandom()
+	exist := []int{2, 4, 6}
+	update := []int{1, 3, 6}
 
-	user := jwt.User{
-		ID:    userID,
-		Email: "aaronchen@jubo.health",
-		Name:  "aaronchen",
-	}
+	deleted := lib.Filter(exist, func(i int) bool {
+		return !lib.Contains(update, i)
+	})
 
-	token := jwt.GenerateJWT(&user)
-	fmt.Println(token)
-
-	claims, err := jwt.ValidateJWT("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwOGE5ZDc1Ni1iMmY4LTQxYWItYjVmMy0xNjA3NmJkZjBjODgiLCJlbWFpbCI6ImFhcm9uY2hlbkBqdWJvLmhlYWx0aCIsIm5hbWUiOiJhYXJvbmNoZW4iLCJpc3MiOiJKdWJvLCBJbmMuIn0.J6CX_2vIFcYRJ0aTlnGNjJy7-OkfBXP7jTrauAd6fG4")
-	if err != nil {
-		fmt.Println("jwt.ValidateJWT", err)
-	}
-
-	fmt.Println(claims)
+	fmt.Println(deleted)
 }
