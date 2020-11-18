@@ -1,9 +1,9 @@
-package config
+package configor
 
 import (
 	"os"
 
-	"github.com/gotify/configor"
+	"github.com/jinzhu/configor"
 )
 
 // Configuration 的 struct field tag 中可以使用 default 欄位來定義預設值

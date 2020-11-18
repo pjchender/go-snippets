@@ -1,5 +1,15 @@
 {
   "cSpell.words": [
-    "godotenv"
+    "Configor",
+    "Fatalln",
+    "Getenv",
+    "Printf",
+    "Println",
+    "dgrijalva",
+    "godotenv",
+    "jinzhu",
+    "joho",
+    "protobuf",
+    "stretchr"
   ]
 }

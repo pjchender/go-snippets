@@ -1,6 +1,4 @@
-// Utils package provide some utilities
-
-package utils
+package godotenv
 
 import (
 	"log"

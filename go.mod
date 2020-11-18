@@ -7,8 +7,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-playground/assert/v2 v2.0.1
 	github.com/google/uuid v1.1.2
-	github.com/gotify/configor v1.0.2
-	github.com/jinzhu/configor v1.2.0 // indirect
+	github.com/jinzhu/configor v1.2.0
 	github.com/joho/godotenv v1.3.0
 	github.com/stretchr/testify v1.6.1
 	github.com/subosito/gotenv v1.2.0

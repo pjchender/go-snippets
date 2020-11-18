@@ -1,7 +1,5 @@
-// This lib provide some utility methods
-//
-// (put some paragraphs here)
-package lib
+// Package slice provide some utility methods
+package slice
 
 // Contains will check whether searchElement contains the target
 func Contains(searchElement []int, target int) bool {
