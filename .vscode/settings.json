@@ -5,11 +5,17 @@
     "Getenv",
     "Printf",
     "Println",
+    "buildin",
     "dgrijalva",
     "godotenv",
     "jinzhu",
     "joho",
+    "of",
     "protobuf",
-    "stretchr"
+    "slice",
+    "sort",
+    "sort slice of structs",
+    "stretchr",
+    "structs"
   ]
 }
