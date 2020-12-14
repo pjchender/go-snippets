@@ -16,6 +16,7 @@
     "sort",
     "sort slice of structs",
     "stretchr",
+    "struct",
     "structs"
   ]
 }
