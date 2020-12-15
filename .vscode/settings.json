@@ -3,6 +3,7 @@
     "Configor",
     "Fatalln",
     "Getenv",
+    "Infof",
     "Printf",
     "Println",
     "buildin",

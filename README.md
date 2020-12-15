@@ -20,6 +20,8 @@ tags:
 - [pkg/jwt](https://github.com/pjchender/go-snippets/tree/master/pkg/jwt)：可以用來建立及讀取 JWT
 - pkg/lumberjack：可以用來產生 rolling logger
 - [pkg/viper](https://github.com/pjchender/go-snippets/tree/master/pkg/viper)：可以用來讀取 App 中的設定檔（configuration）
+- [pkg/lumberjack](https://github.com/pjchender/go-snippets/tree/master/pkg/lumberjack)：搭配 `lumberjack` 來建立 log，並保存在硬碟中
+
 
 ## Helpers
 
