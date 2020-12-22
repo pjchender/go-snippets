@@ -37,6 +37,7 @@ func (g *GormDatabase) UpsertProductByProviderWithoutZero(productInfo *model.Pro
 }
 
 // UpsertProductByProviderWithZero 會以 Upsert 的方式更新有列出的欄位（包含 zero-value）
+// OnConflict 中的 Column 需要是 index
 func (g *GormDatabase) UpsertProductByProviderWithZero(product *model.Product) (*model.Product, error) {
 	var err error
 
