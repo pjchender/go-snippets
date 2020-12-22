@@ -19,7 +19,11 @@ func (g *GormDatabase) UpdateProductWithoutZero(product *model.Product) error {
 
 // UpdateProductWithZero 會更新有在 map 中列出的欄位（包含 zero-value）
 func (g *GormDatabase) UpdateProductWithZero(product *model.Product) error {
-	return g.DB.Updates(map[string]interface{}{"name": product.Name, "price": product.Price, "is_publish": false}).Error
+	return g.DB.Model(&product).Updates(map[string]interface{}{
+		"name":       product.Name,
+		"price":      product.Price,
+		"is_publish": false,
+	}).Error
 }
 
 // UpsertProductByProviderWithoutZero 會以 Upsert 的方式更新 non-zero 的欄位

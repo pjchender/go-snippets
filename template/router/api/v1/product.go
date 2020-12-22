@@ -24,23 +24,36 @@ type ProductAPI struct {
 	DB ProductDatabase
 }
 
+// NewProductHandler 是用來建立 ProductAPI 這個 struct
+func NewProductHandler(db ProductDatabase) *ProductAPI {
+	return &ProductAPI{
+		DB: db,
+	}
+}
+
 // CreateProduct 會建立 Product
 func (p *ProductAPI) CreateProduct(ctx *gin.Context) {
 	var err error
-	var product model.Product
-	err = ctx.Bind(&product)
+
+	var productExternal model.ProductExternal
+	err = ctx.Bind(&productExternal)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
+	product := model.Product{
+		Name:      productExternal.Name,
+		Price:     productExternal.Price,
+		IsPublish: productExternal.IsPublish,
+	}
 	err = p.DB.CreateProduct(&product)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, product)
+	ctx.JSON(http.StatusOK, product.ToExternal())
 }
 
 // GetProducts 會回傳所有的 Products
@@ -51,7 +64,7 @@ func (p *ProductAPI) GetProducts(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, products)
+	ctx.JSON(http.StatusOK, toExternalProducts(products))
 }
 
 // GetProductsWithConditions 可以透過 queryString 篩選使用者想要得資料
@@ -91,13 +104,13 @@ func (p *ProductAPI) GetProductByID(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, product)
+	ctx.JSON(http.StatusOK, product.ToExternal())
 }
 
 // UpdateProductByID 會根據使用者輸入的內容更新 product
 func (p *ProductAPI) UpdateProductByID(ctx *gin.Context) {
+	var err error
 	productIDStr := ctx.Param("id")
-
 	productID, err := uuid.Parse(productIDStr)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
