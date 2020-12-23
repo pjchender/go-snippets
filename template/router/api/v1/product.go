@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -72,14 +73,44 @@ func (p *ProductAPI) GetProductsWithConditions(ctx *gin.Context) {
 	var qs model.ProductQuery
 	err := ctx.BindQuery(&qs)
 	if err != nil {
-		ctx.AbortWithError(http.StatusBadGateway, err)
+		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	products, err := p.DB.GetProductsWithConditions(&model.Product{
-		Name:      qs.Name,
-		IsPublish: strToBool(qs.IsPublish),
-	})
+	productQuery := model.Product{
+		Name: qs.Name,
+	}
+
+	if qs.IsPublish != "" {
+		isPublish, err := strconv.ParseBool(qs.IsPublish)
+		if err != nil {
+			ctx.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+		productQuery.IsPublish = isPublish
+	}
+
+	if qs.ProductID != "" {
+		productID, err := uuid.Parse(qs.ProductID)
+		if err != nil {
+			ctx.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		productQuery.ID = productID
+	}
+
+	if qs.CategoryID != "" {
+		categoryID, err := uuid.Parse(qs.CategoryID)
+		if err != nil {
+			ctx.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		productQuery.CategoryID = categoryID
+	}
+
+	products, err := p.DB.GetProductsWithConditions(&productQuery)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -173,16 +204,8 @@ func (p *ProductAPI) DeleteProductByID(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
-func strToBool(str string) bool {
-	if str == "true" {
-		return true
-	}
-
-	return false
-}
-
-func toExternalProducts(products []*model.Product) []*model.ProductExternal {
-	productsExternal := make([]*model.ProductExternal, len(products))
+func toExternalProducts(products []*model.Product) []model.ProductExternal {
+	productsExternal := make([]model.ProductExternal, len(products))
 
 	for i, product := range products {
 		productsExternal[i] = product.ToExternal()
