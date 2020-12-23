@@ -57,6 +57,11 @@ type ProductQuery struct {
 
 	// categoryID 雖然是 uuid 但透過 queryString 傳的時候只能是字串
 	CategoryID string `form:"categoryId"`
+
+	// query 時間的話可以用 int64 後續轉成 Unix
+	CreatedAt int64 `form:"createdAt"`
+	BeginDate int64 `form:"beginDate"`
+	EndDate   int64 `form:"endDate"`
 }
 
 // FilterProducts 會保留 handler 回傳 true 的 Product

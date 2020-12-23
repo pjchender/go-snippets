@@ -1,6 +1,8 @@
 package database
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/pjchender/go-snippets/template/model"
 	"gorm.io/gorm/clause"
@@ -79,9 +81,21 @@ func (g *GormDatabase) GetProducts() ([]*model.Product, error) {
 }
 
 // GetProductsWithConditions 可以根據條件篩選 Products
-func (g *GormDatabase) GetProductsWithConditions(conditions ...interface{}) ([]*model.Product, error) {
+func (g *GormDatabase) GetProductsWithConditions(
+	beginDate, endDate time.Time,
+	conditions ...interface{},
+) ([]*model.Product, error) {
 	var products []*model.Product
 	tx := g.DB.Table("products").Preload(clause.Associations)
+
+	// query 時間區間
+	if !beginDate.IsZero() {
+		tx.Where("created_at >= ?", beginDate)
+	}
+
+	if !endDate.IsZero() {
+		tx.Where("created_at <= ?", endDate)
+	}
 
 	if len(conditions) == 1 {
 		tx.Where(conditions[0])

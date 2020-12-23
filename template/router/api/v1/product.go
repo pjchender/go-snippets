@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -13,7 +14,7 @@ import (
 type ProductDatabase interface {
 	CreateProduct(product *model.Product) error
 	GetProducts() ([]*model.Product, error)
-	GetProductsWithConditions(conditions ...interface{}) ([]*model.Product, error)
+	GetProductsWithConditions(beginDate, endDate time.Time, conditions ...interface{}) ([]*model.Product, error)
 	GetProductByID(productID uuid.UUID) (*model.Product, error)
 	UpdateProductWithZero(product *model.Product) error
 	UpsertProductByProviderWithZero(product *model.Product) (*model.Product, error)
@@ -81,6 +82,12 @@ func (p *ProductAPI) GetProductsWithConditions(ctx *gin.Context) {
 		Name: qs.Name,
 	}
 
+	// query 特定某一天的時間
+	if qs.CreatedAt != 0 {
+		date := time.Unix(qs.CreatedAt, 0)
+		productQuery.CreatedAt = date
+	}
+
 	if qs.IsPublish != "" {
 		isPublish, err := strconv.ParseBool(qs.IsPublish)
 		if err != nil {
@@ -110,7 +117,17 @@ func (p *ProductAPI) GetProductsWithConditions(ctx *gin.Context) {
 		productQuery.CategoryID = categoryID
 	}
 
-	products, err := p.DB.GetProductsWithConditions(&productQuery)
+	var beginDate time.Time
+	var endDate time.Time
+	if qs.BeginDate != 0 {
+		beginDate = time.Unix(qs.BeginDate, 0)
+	}
+
+	if qs.EndDate != 0 {
+		endDate = time.Unix(qs.EndDate, 0)
+	}
+
+	products, err := p.DB.GetProductsWithConditions(beginDate, endDate, &productQuery)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
