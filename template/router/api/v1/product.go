@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/pjchender/go-snippets/template/model"
+	"github.com/pjchender/go-snippets/template/pkg/convert"
 )
 
 // ProductDatabase 包含在 ProductAPI 中所有會使用到的 Database 方法
@@ -117,16 +118,7 @@ func (p *ProductAPI) GetProductsWithConditions(ctx *gin.Context) {
 		productQuery.CategoryID = categoryID
 	}
 
-	var beginDate time.Time
-	var endDate time.Time
-	if qs.BeginDate != 0 {
-		beginDate = time.Unix(qs.BeginDate, 0)
-	}
-
-	if qs.EndDate != 0 {
-		endDate = time.Unix(qs.EndDate, 0)
-	}
-
+	beginDate, endDate := convert.ParseTimeRange(qs.BeginDate, qs.EndDate)
 	products, err := p.DB.GetProductsWithConditions(beginDate, endDate, &productQuery)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
