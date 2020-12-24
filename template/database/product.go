@@ -123,7 +123,7 @@ func (g *GormDatabase) GetProductByID(productID uuid.UUID) (*model.Product, erro
 }
 
 // GetProductByProvider 會根據 ProviderUniqueID 這個欄位來取得 Product
-func (g *GormDatabase) GetProductByProvider(providerUniqueID uuid.UUID) (*model.Product, error) {
+func (g *GormDatabase) GetProductByProvider(providerUniqueID string) (*model.Product, error) {
 	product := model.Product{}
 	err := g.DB.Preload(clause.Associations).Where("provider_unique_id = ?", providerUniqueID).Take(&product).Error
 	if err != nil {
