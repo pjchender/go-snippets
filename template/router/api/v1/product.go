@@ -17,7 +17,7 @@ type ProductDatabase interface {
 	GetProducts() ([]*model.Product, error)
 	GetProductsWithConditions(beginDate, endDate time.Time, conditions ...interface{}) ([]*model.Product, error)
 	GetProductByID(productID uuid.UUID) (*model.Product, error)
-	UpdateProductWithZero(product *model.Product) error
+	UpdateProductWithZero(product *model.ProductForUpdate) error
 	UpsertProductByProviderWithZero(product *model.Product) (*model.Product, error)
 	DeleteProductByID(productID uuid.UUID) error
 }
@@ -172,7 +172,7 @@ func (p *ProductAPI) UpdateProductByID(ctx *gin.Context) {
 		return
 	}
 
-	product := model.Product{
+	product := model.ProductForUpdate{
 		ID:        productID,
 		Name:      productExternal.Name,
 		Price:     productExternal.Price,

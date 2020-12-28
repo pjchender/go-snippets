@@ -75,3 +75,13 @@ func FilterProducts(searchElement []Product, handler func(product Product) bool)
 	}
 	return searchElement[:n]
 }
+
+// ProductForUpdate 會對應到 database/product 中的 UpdateProductWithZero 方法
+// 之所以需要這個 struct 是因為當 UpdateProductWithZero 沒有對應欄位的 value 時，會用 zero value 覆蓋
+// 因此在更新時一定要把對應的值都給進去
+type ProductForUpdate struct {
+	ID        uuid.UUID
+	Name      string
+	Price     int64
+	IsPublish bool
+}
