@@ -213,8 +213,8 @@ func (p *ProductAPI) DeleteProductByID(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
-func toExternalProducts(products []*model.Product) []model.ProductExternal {
-	productsExternal := make([]model.ProductExternal, len(products))
+func toExternalProducts(products []*model.Product) []*model.ProductExternal {
+	productsExternal := make([]*model.ProductExternal, len(products))
 
 	for i, product := range products {
 		productsExternal[i] = product.ToExternal()

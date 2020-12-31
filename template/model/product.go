@@ -36,7 +36,7 @@ type ProductExternal struct {
 }
 
 // ToExternal 會將 Product 轉成外部使用和檢視的 struct
-func (p *Product) ToExternal() ProductExternal {
+func (p *Product) ToExternal() *ProductExternal {
 	productExternal := ProductExternal{
 		ProductID:  p.ID,
 		Name:       p.Name,
@@ -46,7 +46,7 @@ func (p *Product) ToExternal() ProductExternal {
 		Category:   p.Category.ToExternal(),
 	}
 
-	return productExternal
+	return &productExternal
 }
 
 // ProductQuery 提供可以在 url 後帶入使用的 queryString
@@ -65,7 +65,7 @@ type ProductQuery struct {
 }
 
 // FilterProducts 會保留 handler 回傳 true 的 Product
-func FilterProducts(searchElement []Product, handler func(product Product) bool) []Product {
+func FilterProducts(searchElement []*Product, handler func(product *Product) bool) []*Product {
 	n := 0
 	for _, element := range searchElement {
 		if handler(element) {
