@@ -3,9 +3,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/pjchender/go-snippets/helpers/errcode"
+	"github.com/pjchender/go-snippets/helpers/enum"
 )
 
 func main() {
-	fmt.Printf("%+v \n", errcode.TooManyRequest) // 錯誤 10000007, 錯誤訊息：請求過多
+	req := "foo"
+	err := enum.IsValidOrderStatus(req)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
