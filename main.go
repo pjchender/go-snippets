@@ -7,9 +7,12 @@ import (
 )
 
 func main() {
-	req := "foo"
-	err := enum.IsValidOrderStatus(req)
+	req := "canceled"
+	orderStatus, err := enum.ToOrderStatus(req)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
+
+	fmt.Println(orderStatus)
 }

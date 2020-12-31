@@ -2,13 +2,13 @@ package enum
 
 import "fmt"
 
-type OrderStatus string
+type OrderStatus int
 
 const (
-	Created  OrderStatus = "created"
-	Paid                 = "paid"
-	Canceled             = "canceled"
-	Shipped              = "shipped"
+	Created OrderStatus = iota
+	Paid
+	Canceled
+	Shipped
 )
 
 var orderStatues = map[OrderStatus]string{
@@ -18,13 +18,20 @@ var orderStatues = map[OrderStatus]string{
 	Shipped:  "shipped",
 }
 
-func IsValidOrderStatus(orderStatus string) error {
-	_, ok := orderStatues[OrderStatus(orderStatus)]
-	if !ok {
-		return fmt.Errorf("no available enum of %v", orderStatus)
+// ToOrderStatus 可以將 string 轉成 OrderStatus，若該 string 不存在則回應錯誤
+func ToOrderStatus(orderStatus string) (OrderStatus, error) {
+	switch orderStatus {
+	case Created.MustString():
+		return Created, nil
+	case Paid.MustString():
+		return Paid, nil
+	case Canceled.MustString():
+		return Canceled, nil
+	case Shipped.MustString():
+		return Shipped, nil
+	default:
+		return 0, fmt.Errorf("invalid orderStatus of %v", orderStatus)
 	}
-
-	return nil
 }
 
 func (w OrderStatus) String() (string, error) {
@@ -38,10 +45,6 @@ func (w OrderStatus) String() (string, error) {
 
 // MustString will always return string else panic
 func (w OrderStatus) MustString() string {
-	text, ok := orderStatues[w]
-	if !ok {
-		panic(fmt.Errorf("no available enum of %v", w))
-	}
-
+	text := orderStatues[w]
 	return text
 }
