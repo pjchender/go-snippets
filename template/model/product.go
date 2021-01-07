@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,6 +22,78 @@ type Product struct {
 	// Belongs to Category
 	CategoryID uuid.UUID
 	Category   Category
+}
+
+// Count 會根據 Product 的 Name, IsPublish 和
+func (p *Product) Count(db *gorm.DB) (int64, error) {
+	var count int64
+	if p.Name != "" {
+		db = db.Where("name = ?", p.Name)
+	}
+
+	db = db.Where("is_publish = ?", p.IsPublish)
+	err := db.Model(&p).Where("deleted_at IS NULL").Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+// List 會根據 pageOffset 和 pageSize 以及 name, state 的條件回傳對應的資料
+func (p *Product) List(db *gorm.DB, pageOffset, pageSize int) ([]*Product, error) {
+	var products []*Product
+	var err error
+	if pageOffset >= 0 && pageSize > 0 {
+		db = db.Offset(pageOffset).Limit(pageSize)
+	}
+	if p.Name != "" {
+		db = db.Where("name = ?", p.Name)
+	}
+	db = db.Where("is_publish = ?", p.IsPublish)
+	if err = db.Where("deleted_at IS NULL").Find(&products).Error; err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
+// ListByIDs 會根據給的 ids 回傳對應的資料
+func (p *Product) ListByIDs(db *gorm.DB, ids []uint32) ([]*Product, error) {
+	var products []*Product
+	db = db.Where("deleted_at IS NULL")
+	err := db.Where("id IN (?)", ids).Find(&products).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	return products, nil
+}
+
+// Get 會根據 id 取得某一筆 Product 的資料
+func (p Product) Get(db *gorm.DB) (Product, error) {
+	var product Product
+	err := db.Where("id = ? AND is_publish = ? AND deleted_at IS NULL", p.ID, p.IsPublish).First(&product).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return product, err
+	}
+
+	return product, nil
+}
+
+// Create 會建立新的 Product
+func (p *Product) Create(db *gorm.DB) error {
+	return db.Create(&p).Error
+}
+
+// Update 會更新某筆 Product 的資料
+func (p *Product) Update(db *gorm.DB, values interface{}) error {
+	return db.Model(&p).Where("id = ? AND deleted_at IS NULL", p.ID).Updates(values).Error
+}
+
+// Delete 會刪除某筆 Product
+func (p *Product) Delete(db *gorm.DB) error {
+	return db.Where("deleted_at IS NULL").Delete(&p).Error
 }
 
 // ProductExternal 是給外部 API 檢視和編輯 Category 用

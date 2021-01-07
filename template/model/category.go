@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Category 商品類別
 type Category struct {
 	ID        uuid.UUID `gorm:"primaryKey;uniqueIndex;type:uuid;default:uuid_generate_v4()"`
 	CreatedAt time.Time
