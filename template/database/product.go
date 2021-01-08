@@ -139,3 +139,14 @@ func (g *GormDatabase) GetProductByProvider(providerUniqueID string) (*model.Pro
 func (g *GormDatabase) DeleteProductByID(productID uuid.UUID) error {
 	return g.DB.Select(clause.Associations).Delete(&model.Product{ID: productID}).Error
 }
+
+// GetProductsInCategoryIDs 會根據帶入的 categoryIDs 回傳 products
+func (g *GormDatabase) GetProductsInCategoryIDs(categoryIDs []uuid.UUID) ([]*model.Product, error) {
+	var products []*model.Product
+	err := g.DB.Where("is_publish = ? AND organization_id IN ?", true, categoryIDs).Find(&products).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}

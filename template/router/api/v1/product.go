@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,7 @@ type ProductDatabase interface {
 	GetProducts() ([]*model.Product, error)
 	GetProductsWithConditions(beginDate, endDate time.Time, conditions ...interface{}) ([]*model.Product, error)
 	GetProductByID(productID uuid.UUID) (*model.Product, error)
+	GetProductsInCategoryIDs(categoryIDs []uuid.UUID) ([]*model.Product, error)
 	UpdateProductWithZero(product *model.ProductForUpdate) error
 	UpsertProductByProviderWithZero(product *model.Product) (*model.Product, error)
 	DeleteProductByID(productID uuid.UUID) error
@@ -145,6 +147,35 @@ func (p *ProductAPI) GetProductByID(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, product.ToExternal())
+}
+
+// GetProductsInCategoryIDs 會根據 categoryIDs 回傳對應的 products
+func (p *ProductAPI) GetProductsInCategoryIDs(ctx *gin.Context) {
+	var qs struct {
+		categoryIDs string `form:"categoryIds"`
+	}
+
+	err := ctx.BindQuery(&qs)
+	if err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	categoryIDsStr := strings.Split(qs.categoryIDs, ",")
+	categoryIDs := make([]uuid.UUID, len(categoryIDsStr))
+	for i, categoryIDStr := range categoryIDsStr {
+		productID, err := uuid.Parse(categoryIDStr)
+		if err != nil {
+			ctx.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		categoryIDs[i] = productID
+	}
+
+	products, err := p.DB.GetProductsInCategoryIDs(categoryIDs)
+
+	ctx.JSON(http.StatusOK, toExternalProducts(products))
 }
 
 // UpdateProductByID 會根據使用者輸入的內容更新 product
