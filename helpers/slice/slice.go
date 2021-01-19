@@ -13,12 +13,13 @@ func Contains(searchElement []*int, target int) bool {
 
 // Filter will check whether searchElement fulfill the handler condition
 func Filter(searchElement []*int, handler func(*int) bool) []*int {
-	n := 0
+	var filtered []*int
+
 	for _, element := range searchElement {
 		if handler(element) {
-			searchElement[n] = element
-			n++
+			filtered = append(filtered, element)
 		}
 	}
-	return searchElement[:n]
+
+	return filtered
 }
