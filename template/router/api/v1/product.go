@@ -40,18 +40,32 @@ func NewProductHandler(db ProductDatabase) *ProductAPI {
 func (p *ProductAPI) CreateProduct(ctx *gin.Context) {
 	var err error
 
-	var productExternal model.ProductExternal
-	err = ctx.Bind(&productExternal)
+	var param model.CreateProductRequest
+	err = ctx.Bind(&param)
+	if err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	isPublish, err := strconv.ParseBool(param.IsPublish)
+	if err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	categoryID, err := uuid.Parse(param.CategoryID)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
 	product := model.Product{
-		Name:      productExternal.Name,
-		Price:     productExternal.Price,
-		IsPublish: productExternal.IsPublish,
+		Name:       param.Name,
+		Price:      param.Price,
+		IsPublish:  isPublish,
+		CategoryID: categoryID,
 	}
+
 	err = p.DB.CreateProduct(&product)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
