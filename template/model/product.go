@@ -122,6 +122,15 @@ func (p *Product) ToExternal() *ProductExternal {
 	return &productExternal
 }
 
+// ToExternalProducts 會把 products 轉成 externalProducts
+func ToExternalProducts(products []*Product) []*ProductExternal {
+	externalProducts := make([]*ProductExternal, len(products))
+	for i, product := range products {
+		externalProducts[i] = product.ToExternal()
+	}
+	return externalProducts
+}
+
 // ProductQuery 提供可以在 url 後帶入使用的 queryString
 type ProductQuery struct {
 	ProductID string `form:"productId"`
@@ -135,6 +144,16 @@ type ProductQuery struct {
 	CreatedAt int64 `form:"createdAt"`
 	BeginDate int64 `form:"beginDate"`
 	EndDate   int64 `form:"endDate"`
+}
+
+// CreateProductRequest 是使用者在建立 Product 時需要帶入的參數
+type CreateProductRequest struct {
+	Name      string `form:"name" binding:"required"`
+	IsPublish string `form:"isPublish" binding:"required"`
+	Price     int64  `form:"price" binding:"required,gte=1"`
+
+	// categoryID 雖然是 uuid 但透過 queryString 傳的時候只能是字串
+	CategoryID string `form:"categoryId" binding:"required"`
 }
 
 // FilterProducts 會保留 handler 回傳 true 的 Product

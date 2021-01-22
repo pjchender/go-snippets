@@ -14,12 +14,16 @@ type Category struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt
 	Name      string
+
+	// Category has many Products
+	Products []*Product
 }
 
 // CategoryExternal 是給外部 API 檢視和編輯 Category 用
 type CategoryExternal struct {
-	CategoryID uuid.UUID `json:"categoryId"`
-	Name       string    `json:"name"`
+	CategoryID uuid.UUID          `json:"categoryId"`
+	Name       string             `json:"name"`
+	Products   []*ProductExternal `json:"products"`
 }
 
 // ToExternal 可以將 Category 轉成 CategoryExternal
@@ -27,6 +31,7 @@ func (c *Category) ToExternal() CategoryExternal {
 	categoryExternal := CategoryExternal{
 		CategoryID: c.ID,
 		Name:       c.Name,
+		Products:   ToExternalProducts(c.Products),
 	}
 
 	return categoryExternal
