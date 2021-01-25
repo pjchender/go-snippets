@@ -13,6 +13,7 @@ func NewRouter(db *database.GormDatabase) *gin.Engine {
 	v1 := router.Group("/api/v1")
 	{
 		RegisterProductV1(db, v1)
+		RegisterCategory(db, v1)
 	}
 
 	return router

@@ -36,3 +36,12 @@ func (c *Category) ToExternal() CategoryExternal {
 
 	return categoryExternal
 }
+
+func ToExternalCategory(categories []*Category) []*CategoryExternal {
+	externalCategories := make([]*CategoryExternal, len(categories))
+	for i, category := range categories {
+		categoryExternal := category.ToExternal()
+		externalCategories[i] = &categoryExternal
+	}
+	return externalCategories
+}
