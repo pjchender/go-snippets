@@ -21,13 +21,16 @@ func (g *GormDatabase) UpdateProductWithoutZero(product *model.Product) error {
 
 // UpdateProductWithZero 會更新有在 map 中列出的欄位（包含 zero-value）
 func (g *GormDatabase) UpdateProductWithZero(product *model.ProductForUpdate) error {
-	return g.DB.Model(&model.Product{
-		ID: product.ID,
-	}).Updates(map[string]interface{}{
+
+	values := map[string]interface{}{
 		"name":       product.Name,
 		"price":      product.Price,
 		"is_publish": false,
-	}).Error
+	}
+
+	return g.DB.Model(&model.Product{
+		ID: product.ID,
+	}).Updates(values).Error
 }
 
 // UpsertProductByProviderWithoutZero 會以 Upsert 的方式更新 non-zero 的欄位
@@ -122,6 +125,17 @@ func (g *GormDatabase) GetProductByID(productID uuid.UUID) (*model.Product, erro
 	}
 
 	return &product, nil
+}
+
+// GetProductByIDs 會根據 product 的 ids 回傳 Products
+func (g *GormDatabase) GetProductByIDs(productIDs []uuid.UUID) ([]*model.Product, error) {
+	var products []*model.Product
+	err := g.DB.Where("id IN (?)", productIDs).Find(&products).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
 }
 
 // GetProductByProvider 會根據 ProviderUniqueID 這個欄位來取得 Product
