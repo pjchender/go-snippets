@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pjchender/go-snippets/template/model"
+	"github.com/pjchender/go-snippets/template/service"
 	"gorm.io/gorm/clause"
 )
 
@@ -20,7 +21,7 @@ func (g *GormDatabase) UpdateProductWithoutZero(product *model.Product) error {
 }
 
 // UpdateProductWithZero 會更新有在 map 中列出的欄位（包含 zero-value）
-func (g *GormDatabase) UpdateProductWithZero(product *model.ProductForUpdate) error {
+func (g *GormDatabase) UpdateProductWithZero(product *service.UpdateProductRequest) error {
 
 	values := map[string]interface{}{
 		"name":       product.Name,

@@ -131,31 +131,6 @@ func ToExternalProducts(products []*Product) []*ProductExternal {
 	return externalProducts
 }
 
-// ProductQuery 提供可以在 url 後帶入使用的 queryString
-type ProductQuery struct {
-	ProductID string `form:"productId"`
-	Name      string `form:"name"`
-	IsPublish string `form:"isPublish"`
-
-	// categoryID 雖然是 uuid 但透過 queryString 傳的時候只能是字串
-	CategoryID string `form:"categoryId"`
-
-	// query 時間的話可以用 int64 後續轉成 Unix
-	CreatedAt int64 `form:"createdAt"`
-	BeginDate int64 `form:"beginDate"`
-	EndDate   int64 `form:"endDate"`
-}
-
-// CreateProductRequest 是使用者在建立 Product 時需要帶入的參數
-type CreateProductRequest struct {
-	Name      string `form:"name" binding:"required"`
-	IsPublish string `form:"isPublish" binding:"required"`
-	Price     int64  `form:"price" binding:"required,gte=1"`
-
-	// categoryID 雖然是 uuid 但透過 queryString 傳的時候只能是字串
-	CategoryID string `form:"categoryId" binding:"required"`
-}
-
 // FilterProducts 會保留 handler 回傳 true 的 Product
 func FilterProducts(searchElement []*Product, handler func(product *Product) bool) []*Product {
 	n := 0

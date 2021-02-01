@@ -8,8 +8,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/pjchender/go-snippets/template/database"
 	"github.com/pjchender/go-snippets/template/model"
 	"github.com/pjchender/go-snippets/template/pkg/convert"
+	"github.com/pjchender/go-snippets/template/service"
 )
 
 // ProductDatabase 包含在 ProductAPI 中所有會使用到的 Database 方法
@@ -19,14 +21,14 @@ type ProductDatabase interface {
 	GetProductsWithConditions(beginDate, endDate time.Time, conditions ...interface{}) ([]*model.Product, error)
 	GetProductByID(productID uuid.UUID) (*model.Product, error)
 	GetProductsInCategoryIDs(categoryIDs []uuid.UUID) ([]*model.Product, error)
-	UpdateProductWithZero(product *model.ProductForUpdate) error
+	UpdateProductWithZero(product *service.UpdateProductRequest) error
 	UpsertProductByProviderWithZero(product *model.Product) (*model.Product, error)
 	DeleteProductByID(productID uuid.UUID) error
 }
 
 // ProductAPI 可以使用 ProductDatabase 的方法
 type ProductAPI struct {
-	DB ProductDatabase
+	DB *database.GormDatabase
 }
 
 // NewProductHandler 是用來建立 ProductAPI 這個 struct
@@ -40,7 +42,7 @@ func NewProductHandler(db ProductDatabase) *ProductAPI {
 func (p *ProductAPI) CreateProduct(ctx *gin.Context) {
 	var err error
 
-	var param model.CreateProductRequest
+	var param service.CreateProductRequest
 	err = ctx.Bind(&param)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
@@ -88,54 +90,58 @@ func (p *ProductAPI) GetProducts(ctx *gin.Context) {
 
 // GetProductsWithConditions 可以透過 queryString 篩選使用者想要得資料
 func (p *ProductAPI) GetProductsWithConditions(ctx *gin.Context) {
-	var qs model.ProductQuery
-	err := ctx.BindQuery(&qs)
+	var param service.ProductQuery
+	err := ctx.BindQuery(&param)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	productQuery := model.Product{
-		Name: qs.Name,
+	var isPublish bool
+	if param.IsPublish != "" {
+		isPublish, err = strconv.ParseBool(param.IsPublish)
+		if err != nil {
+			ctx.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+	}
+
+	var productID uuid.UUID
+	if param.ProductID != "" {
+		productID, err = uuid.Parse(param.ProductID)
+		if err != nil {
+			ctx.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+	}
+
+	var categoryID uuid.UUID
+	if param.CategoryID != "" {
+		categoryID, err = uuid.Parse(param.CategoryID)
+		if err != nil {
+			ctx.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
 	}
 
 	// query 特定某一天的時間
-	if qs.CreatedAt != 0 {
-		date := time.Unix(qs.CreatedAt, 0)
-		productQuery.CreatedAt = date
+	var createdAt time.Time
+	if param.CreatedAt != 0 {
+		createdAt = time.Unix(param.CreatedAt, 0)
 	}
+	beginDate, endDate := convert.ParseTimeRange(param.BeginDate, param.EndDate)
 
-	if qs.IsPublish != "" {
-		isPublish, err := strconv.ParseBool(qs.IsPublish)
-		if err != nil {
-			ctx.AbortWithError(http.StatusBadRequest, err)
-			return
-		}
-		productQuery.IsPublish = isPublish
-	}
-
-	if qs.ProductID != "" {
-		productID, err := uuid.Parse(qs.ProductID)
-		if err != nil {
-			ctx.AbortWithError(http.StatusBadRequest, err)
-			return
-		}
-
-		productQuery.ID = productID
-	}
-
-	if qs.CategoryID != "" {
-		categoryID, err := uuid.Parse(qs.CategoryID)
-		if err != nil {
-			ctx.AbortWithError(http.StatusBadRequest, err)
-			return
-		}
-
-		productQuery.CategoryID = categoryID
-	}
-
-	beginDate, endDate := convert.ParseTimeRange(qs.BeginDate, qs.EndDate)
-	products, err := p.DB.GetProductsWithConditions(beginDate, endDate, &productQuery)
+	svc := service.New(ctx, p.DB)
+	products, err := svc.ListProducts(
+		service.ListProductRequest{
+			ProductID:  productID,
+			Name:       param.Name,
+			IsPublish:  isPublish,
+			CategoryID: categoryID,
+			CreatedAt:  createdAt,
+			BeginDate:  beginDate,
+			EndDate:    endDate,
+		})
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -217,7 +223,7 @@ func (p *ProductAPI) UpdateProductByID(ctx *gin.Context) {
 		return
 	}
 
-	product := model.ProductForUpdate{
+	product := service.UpdateProductRequest{
 		ID:        productID,
 		Name:      productExternal.Name,
 		Price:     productExternal.Price,
