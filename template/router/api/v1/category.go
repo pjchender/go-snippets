@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pjchender/go-snippets/template/database"
 	"github.com/pjchender/go-snippets/template/model"
+	"github.com/pjchender/go-snippets/template/pkg/app"
 	"github.com/pjchender/go-snippets/template/service"
 	log "github.com/sirupsen/logrus"
 )
@@ -56,14 +57,28 @@ func (s *CategoryAPI) List(ctx *gin.Context) {
 	}
 
 	svc := service.New(ctx.Request.Context(), s.DB)
-	categories, err := svc.GetCategoryList(param)
+	paging, err := app.NewPaging(ctx)
+	if err != nil {
+		log.Errorf("app.NewPaging failed: %v", err)
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	categories, err := svc.GetCategoryList(param, paging)
 	if err != nil {
 		log.Errorf("svc.GetCategory failed: %v", err)
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, model.ToExternalCategory(categories))
+	totalCounts, err := svc.CountCategory(service.CountCategoryRequest{})
+	if err != nil {
+		log.Errorf("svc.CountCategory failed: %v", err)
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, app.ToListResponse(model.ToExternalCategory(categories), paging.WithTotalPage(totalCounts)))
 }
 
 func (c *CategoryAPI) Create(ctx *gin.Context) {

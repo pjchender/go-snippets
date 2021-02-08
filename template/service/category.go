@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/google/uuid"
 	"github.com/pjchender/go-snippets/template/model"
+	"github.com/pjchender/go-snippets/template/pkg/app"
 )
 
 // 這裏要根據 Database 需要接受的參數來定義型別
@@ -10,6 +11,11 @@ import (
 // GetCategoryRequest 是從路由的 param 取得
 type GetCategoryRequest struct {
 	ID uuid.UUID
+}
+
+// CountCategoryRequest 是從路由的 queryString 取得
+type CountCategoryRequest struct {
+	Name string `form:"name"`
 }
 
 // ListCategoryRequest 是從路由的 queryString 取得
@@ -35,6 +41,10 @@ type DeleteCategoryRequest struct {
 	ID uuid.UUID
 }
 
+func (svc *Service) CountCategory(param CountCategoryRequest) (int64, error) {
+	return svc.db.CountCategory(param)
+}
+
 func (svc *Service) GetCategoryByID(param GetCategoryRequest) (*model.Category, error) {
 	category, err := svc.db.GetCategoryByID(param.ID)
 	if err != nil {
@@ -43,8 +53,8 @@ func (svc *Service) GetCategoryByID(param GetCategoryRequest) (*model.Category, 
 	return category, nil
 }
 
-func (svc *Service) GetCategoryList(param ListCategoryRequest) ([]*model.Category, error) {
-	categories, err := svc.db.GetCategories(model.Category{
+func (svc *Service) GetCategoryList(param ListCategoryRequest, paging *app.Paging) ([]*model.Category, error) {
+	categories, err := svc.db.ListCategory(paging.Page, paging.PageSize, model.Category{
 		Name: param.Name,
 	})
 

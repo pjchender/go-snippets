@@ -3,6 +3,7 @@ package database
 import (
 	"github.com/google/uuid"
 	"github.com/pjchender/go-snippets/template/model"
+	"github.com/pjchender/go-snippets/template/pkg/app"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -31,12 +32,37 @@ func (d *GormDatabase) UpdateCategory(category *model.Category) error {
 		Updates(values).Error
 }
 
-// GetCategories 會同時撈出 Categories 和 nested 在內的 Products
-func (d *GormDatabase) GetCategories(conditions ...interface{}) ([]*model.Category, error) {
+// CountCategory 會根據 conditions 回傳符合條件的資料數
+func (d *GormDatabase) CountCategory(conditions ...interface{}) (int64, error) {
+	var count int64
+
+	tx := d.DB.Model(&model.Category{})
+
+	if len(conditions) == 1 {
+		tx.Where(conditions[0])
+	} else if len(conditions) > 1 {
+		tx.Where(conditions[0], conditions[1:]...)
+	}
+
+	err := tx.Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+
+}
+
+// ListCategory 會同時撈出 Categories 和 nested 在內的 Products
+func (d *GormDatabase) ListCategory(page, pageSize int, conditions ...interface{}) ([]*model.Category, error) {
 	var categories []*model.Category
 
 	// Preload 中的名稱需要跟著 model.Category 中的定義，所以這裡會用大寫的 Products
 	tx := d.DB.Preload("Products")
+
+	pageOffset := app.GetPageOffset(page, pageSize)
+	if pageOffset >= 0 && pageSize > 0 {
+		tx = tx.Offset(pageOffset).Limit(pageSize)
+	}
 
 	if len(conditions) == 1 {
 		tx.Where(conditions[0])
