@@ -48,7 +48,7 @@ func (c *CategoryAPI) Get(ctx *gin.Context) {
 }
 
 func (s *CategoryAPI) List(ctx *gin.Context) {
-	param := service.ListCategoryRequest{}
+	param := service.CategoryQuery{}
 	err := ctx.ShouldBind(&param)
 	if err != nil {
 		log.Errorf("ctx.ShouldBind failed: %v", err)
@@ -64,14 +64,18 @@ func (s *CategoryAPI) List(ctx *gin.Context) {
 		return
 	}
 
-	categories, err := svc.GetCategoryList(param, paging)
+	categories, err := svc.GetCategoryList(service.ListCategoryRequest{
+		Name: param.Name,
+	}, paging)
 	if err != nil {
 		log.Errorf("svc.GetCategory failed: %v", err)
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	totalCounts, err := svc.CountCategory(service.CountCategoryRequest{})
+	totalCounts, err := svc.CountCategory(service.CountCategoryRequest{
+		Name: param.Name,
+	})
 	if err != nil {
 		log.Errorf("svc.CountCategory failed: %v", err)
 		ctx.AbortWithError(http.StatusInternalServerError, err)

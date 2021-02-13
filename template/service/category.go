@@ -6,8 +6,11 @@ import (
 	"github.com/pjchender/go-snippets/template/pkg/app"
 )
 
-// 這裏要根據 Database 需要接受的參數來定義型別
+type CategoryQuery struct {
+	Name string `form:"name"`
+}
 
+// 這裏要根據 Database 需要接受的參數來定義型別
 // GetCategoryRequest 是從路由的 param 取得
 type GetCategoryRequest struct {
 	ID uuid.UUID
