@@ -26,6 +26,10 @@ func NewCategoryHandler(db *database.GormDatabase) *CategoryAPI {
 	}
 }
 
+type CategoryQuery struct {
+	Name string `form:"name"`
+}
+
 func (c *CategoryAPI) Get(ctx *gin.Context) {
 	var err error
 	categoryIDStr := ctx.Param("id")
@@ -48,8 +52,8 @@ func (c *CategoryAPI) Get(ctx *gin.Context) {
 }
 
 func (s *CategoryAPI) List(ctx *gin.Context) {
-	param := service.CategoryQuery{}
-	err := ctx.ShouldBind(&param)
+	qs := CategoryQuery{}
+	err := ctx.ShouldBind(&qs)
 	if err != nil {
 		log.Errorf("ctx.ShouldBind failed: %v", err)
 		ctx.AbortWithError(http.StatusBadRequest, err)
@@ -65,7 +69,7 @@ func (s *CategoryAPI) List(ctx *gin.Context) {
 	}
 
 	categories, err := svc.GetCategoryList(service.ListCategoryRequest{
-		Name: param.Name,
+		Name: qs.Name,
 	}, paging)
 	if err != nil {
 		log.Errorf("svc.GetCategory failed: %v", err)
@@ -74,7 +78,7 @@ func (s *CategoryAPI) List(ctx *gin.Context) {
 	}
 
 	totalCounts, err := svc.CountCategory(service.CountCategoryRequest{
-		Name: param.Name,
+		Name: qs.Name,
 	})
 	if err != nil {
 		log.Errorf("svc.CountCategory failed: %v", err)

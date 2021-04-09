@@ -7,21 +7,6 @@ import (
 	"github.com/pjchender/go-snippets/template/model"
 )
 
-// ProductQuery 提供可以在 url 後帶入使用的 queryString
-type ProductQuery struct {
-	ProductID string `form:"productId"`
-	Name      string `form:"name"`
-	IsPublish string `form:"isPublish"`
-
-	// categoryID 雖然是 uuid 但透過 queryString 傳的時候只能是字串
-	CategoryID string `form:"categoryId"`
-
-	// query 時間的話可以用 int64 後續轉成 Unix
-	CreatedAt int64 `form:"createdAt"`
-	BeginDate int64 `form:"beginDate"`
-	EndDate   int64 `form:"endDate"`
-}
-
 // CreateProductRequest 是使用者在建立 Product 時需要帶入的參數
 type CreateProductRequest struct {
 	Name      string `form:"name" binding:"required"`
@@ -61,7 +46,7 @@ type ListProductRequest struct {
 	EndDate    time.Time
 }
 
-func ToInternalProducts(upsertProducts []*UpsertProductRequest) []*model.Product {
+func UpsertProductsToInternal(upsertProducts []*UpsertProductRequest) []*model.Product {
 	products := make([]*model.Product, len(upsertProducts))
 
 	for i, upsertProduct := range upsertProducts {

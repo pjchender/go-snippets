@@ -14,28 +14,31 @@ import (
 	"github.com/pjchender/go-snippets/template/service"
 )
 
-// ProductDatabase 包含在 ProductAPI 中所有會使用到的 Database 方法
-type ProductDatabase interface {
-	CreateProduct(product *model.Product) error
-	GetProducts() ([]*model.Product, error)
-	GetProductsWithConditions(beginDate, endDate time.Time, conditions ...interface{}) ([]*model.Product, error)
-	GetProductByID(productID uuid.UUID) (*model.Product, error)
-	GetProductsInCategoryIDs(categoryIDs []uuid.UUID) ([]*model.Product, error)
-	UpdateProductWithZero(product *service.UpdateProductRequest) error
-	UpsertProductByProviderWithZero(product *model.Product) (*model.Product, error)
-	DeleteProductByID(productID uuid.UUID) error
-}
-
 // ProductAPI 可以使用 ProductDatabase 的方法
 type ProductAPI struct {
 	DB *database.GormDatabase
 }
 
 // NewProductHandler 是用來建立 ProductAPI 這個 struct
-func NewProductHandler(db ProductDatabase) *ProductAPI {
+func NewProductHandler(db *database.GormDatabase) *ProductAPI {
 	return &ProductAPI{
 		DB: db,
 	}
+}
+
+// ProductQuery 提供可以在 url 後帶入使用的 queryString
+type ProductQuery struct {
+	ProductID string `form:"productId"`
+	Name      string `form:"name"`
+	IsPublish string `form:"isPublish"`
+
+	// categoryID 雖然是 uuid 但透過 queryString 傳的時候只能是字串
+	CategoryID string `form:"categoryId"`
+
+	// query 時間的話可以用 int64 後續轉成 Unix
+	CreatedAt int64 `form:"createdAt"`
+	BeginDate int64 `form:"beginDate"`
+	EndDate   int64 `form:"endDate"`
 }
 
 // CreateProduct 會建立 Product
@@ -90,7 +93,7 @@ func (p *ProductAPI) GetProducts(ctx *gin.Context) {
 
 // GetProductsWithConditions 可以透過 queryString 篩選使用者想要得資料
 func (p *ProductAPI) GetProductsWithConditions(ctx *gin.Context) {
-	var param service.ProductQuery
+	var param ProductQuery
 	err := ctx.BindQuery(&param)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)

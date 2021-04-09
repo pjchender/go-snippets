@@ -6,10 +6,6 @@ import (
 	"github.com/pjchender/go-snippets/template/pkg/app"
 )
 
-type CategoryQuery struct {
-	Name string `form:"name"`
-}
-
 // 這裏要根據 Database 需要接受的參數來定義型別
 // GetCategoryRequest 是從路由的 param 取得
 type GetCategoryRequest struct {
@@ -71,7 +67,7 @@ func (svc *Service) GetCategoryList(param ListCategoryRequest, paging *app.Pagin
 func (svc *Service) CreateCategory(param CreateCategoryRequest) (*model.Category, error) {
 	category := model.Category{
 		Name:     param.Name,
-		Products: ToInternalProducts(param.Products),
+		Products: UpsertProductsToInternal(param.Products),
 	}
 
 	err := svc.db.CreateCategory(&category)
@@ -89,7 +85,7 @@ func (svc *Service) CreateCategories(params []*CreateCategoryRequest) ([]*model.
 	for i, param := range params {
 		categories[i] = &model.Category{
 			Name:     param.Name,
-			Products: ToInternalProducts(param.Products),
+			Products: UpsertProductsToInternal(param.Products),
 		}
 	}
 
@@ -109,7 +105,7 @@ func (svc *Service) UpdateCategory(param UpdateCategoryRequest) (*model.Category
 	category := model.Category{
 		ID:       param.ID,
 		Name:     param.Name,
-		Products: ToInternalProducts(param.Products),
+		Products: UpsertProductsToInternal(param.Products),
 	}
 
 	// 先確認該筆 record 存在，找不到該 record 則回傳 404
